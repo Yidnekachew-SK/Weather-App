@@ -1,0 +1,60 @@
+import "./styles.css";
+
+const tempDisplayer = document.querySelectorAll(".temprature-display");
+const minTempDisplayer = document.querySelectorAll(".min-temp");
+const maxTempDisplayer = document.querySelectorAll(".max-temp");
+const humidityDisplayer = document.querySelectorAll(".humidity");
+const conditionDisplyer = document.querySelectorAll(".condition");
+const city = document.querySelector(".city-name");
+
+
+async function getInfo (url) {
+	try {
+		const response = await fetch(url)
+		const data = await response.json();
+		console.log(data);
+		return data;
+	} catch(e) {
+		console.log("failed to fetch")
+		console.log(e);
+	}
+}
+
+function todayWeatherData (response) {
+	tempDisplayer[0].textContent = response.days[0].temp;
+	minTempDisplayer[0].textContent = `min-temp:  ${response.days[0].tempmin}`;
+	maxTempDisplayer[0].textContent = `max-temp: ${response.days[0].tempmax}`;
+	humidityDisplayer[0].textContent = `humidity: ${response.days[0].humidity}`;
+	conditionDisplyer[0].textContent = `condition: ${response.days[0].conditions}`;
+}
+
+function tommorowWeatherData (response) {
+	tempDisplayer[1].textContent = response.days[1].temp;
+	minTempDisplayer[1].textContent = `min-temp:  ${response.days[1].tempmin}`;
+	maxTempDisplayer[1].textContent = `max-temp: ${response.days[1].tempmax}`;
+	humidityDisplayer[1].textContent = `humidity: ${response.days[1].humidity}`;
+	conditionDisplyer[1].textContent = `condition: ${response.days[1].conditions}`;
+}
+
+getInfo('https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/addisababa?key=FFHMVH7KNE73CCGFAANMNBSY7')
+.then((response) => {
+	city.textContent = "Addis Ababa";
+	todayWeatherData(response);
+	tommorowWeatherData(response);
+});
+
+const form = document.querySelector("form");
+form.addEventListener("submit", (event) => {
+	event.preventDefault();
+
+	const formData = new FormData(event.target);
+	let cityName = formData.get("City");
+	city.textContent = cityName;
+
+
+	getInfo(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${cityName}?key=FFHMVH7KNE73CCGFAANMNBSY7`)
+	.then((response) => {
+		todayWeatherData(response);
+		tommorowWeatherData(response);
+	});
+})
