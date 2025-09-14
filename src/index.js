@@ -5,18 +5,18 @@ const minTempDisplayer = document.querySelectorAll(".min-temp");
 const maxTempDisplayer = document.querySelectorAll(".max-temp");
 const humidityDisplayer = document.querySelectorAll(".humidity");
 const conditionDisplyer = document.querySelectorAll(".condition");
-const city = document.querySelector(".city-name");
+const cityDisplayer = document.querySelector(".city-name");
 let degreeSymbol = "°C";
+const token = "FFHMVH7KNE73CCGFAANMNBSY7";
 
 
 async function getInfo (url) {
 	try {
 		const response = await fetch(url)
 		const data = await response.json();
-		//console.log(data);
 		return data;
 	} catch(e) {
-		console.log("failed to fetch")
+		cityDisplayer.textContent = "Failed to fetch data";
 		console.log(e);
 	}
 }
@@ -43,14 +43,17 @@ form.addEventListener("submit", (event) => {
 
 	const formData = new FormData(event.target);
 	let cityName = formData.get("City");
-	city.textContent = cityName;
+	cityDisplayer.textContent = cityName;
 
 
-	getInfo(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${cityName}?unitGroup=metric&key=FFHMVH7KNE73CCGFAANMNBSY7`)
+	getInfo(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${cityName}?unitGroup=metric&key=${token}`)
 	.then((response) => {
 		todayWeatherData(response);
 		tommorowWeatherData(response);
+	}).then(() => {
+		document.querySelector(".content").style.visibility = "visible";
 	});
 
-	const content = document.querySelector(".content").style.visibility = "visible";
+	form.reset();
+
 })
