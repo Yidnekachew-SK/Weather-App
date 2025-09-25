@@ -6,18 +6,45 @@ const maxTempDisplayer = document.querySelectorAll(".max-temp");
 const humidityDisplayer = document.querySelectorAll(".humidity");
 const conditionDisplyer = document.querySelectorAll(".condition");
 const cityDisplayer = document.querySelector(".city-name");
-let degreeSymbol = "°C";
-const token = "FFHMVH7KNE73CCGFAANMNBSY7";
+let degreeSymbol;
+let cityName;
+let currentUnit = "metric";
 
-
-async function getInfo (url) {
+async function getInfo (city, key, system) {
 	try {
-		const response = await fetch(url)
+		const response = await fetch(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=${system}&key=${key}`)
 		const data = await response.json();
 		return data;
 	} catch(e) {
 		cityDisplayer.textContent = "Failed to fetch data";
-		console.log(e);
+	}
+}
+
+function displayInfo (city, currentUnit) {
+	checkMetricSystem(currentUnit);
+	cityDisplayer.textContent = "Loading content";
+	cityDisplayer.style.visibility = "visible";
+
+	getInfo(city, "FFHMVH7KNE73CCGFAANMNBSY7", currentUnit)
+	.then((response) => {
+		todayWeatherData(response);
+		tommorowWeatherData(response);
+	}).then(() => {
+		document.querySelector(".content").style.visibility = "visible";
+		document.querySelector(".change-unit").style.display = "block";
+	}).catch((e) => {
+		cityDisplayer.textContent = "Failed to fetch data";
+		cityDisplayer.style.visibility = "visible";
+	}).finally(() => {
+		cityDisplayer.textContent = cityName;
+	})
+}
+
+function checkMetricSystem (s) {
+	if(s === "metric"){
+		degreeSymbol = "°C";
+	} else {
+		degreeSymbol = "°F";
 	}
 }
 
@@ -42,18 +69,16 @@ form.addEventListener("submit", (event) => {
 	event.preventDefault();
 
 	const formData = new FormData(event.target);
-	let cityName = formData.get("City");
+	cityName = formData.get("City");
 	cityDisplayer.textContent = cityName;
 
-
-	getInfo(`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${cityName}?unitGroup=metric&key=${token}`)
-	.then((response) => {
-		todayWeatherData(response);
-		tommorowWeatherData(response);
-	}).then(() => {
-		document.querySelector(".content").style.visibility = "visible";
-	});
+	displayInfo(cityName, currentUnit);
 
 	form.reset();
+})
 
+const changeUnitButton = document.querySelector(".change-unit");
+changeUnitButton.addEventListener("click", () => {
+	currentUnit = currentUnit === "metric" ? "us" : "metric";
+	displayInfo(cityName, currentUnit);
 })
